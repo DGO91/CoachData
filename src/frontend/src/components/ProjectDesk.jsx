@@ -45,7 +45,7 @@ function loadState(storageKey = KEY, allowSeed = false) {
     if (raw) {
       const p = JSON.parse(raw);
       if (p && p.tasks && p.projects) {
-        // Garantizar que la lista de personas contenga a Elsi y Diogenes de forma coherente
+        // Garantizar que la lista de personas contenga a Coach y Diogenes de forma coherente
         p.people = SEED_PEOPLE.map((sp) => Object.assign({}, sp));
         return normalize(p);
       }
@@ -76,7 +76,7 @@ const DOWS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satu
 
 /* ---------------- seed ---------------- */
 const SEED_PEOPLE = [
-  { id: "p-elsi", name: "Elsi", role: "Founder", days: 5, hue: 152 },
+  { id: "p-coach", name: "Coach", role: "Founder", days: 5, hue: 152 },
   { id: "p-diogenes", name: "Diogenes", role: "Tech Lead", days: 5, hue: 205 }
 ];
 const SEED_PROJECTS = [
@@ -182,7 +182,7 @@ function seedState() {
       d.setDate(d.getDate() + x.due);
       return {
         id: "t" + (i + 1), title: x.t, project: x.p, status: x.s, priority: x.pr,
-        assignee: i % 3 === 0 ? "p-elsi" : "",
+        assignee: i % 3 === 0 ? "p-coach" : "",
         due: iso(d.getFullYear(), d.getMonth(), d.getDate()),
         estimate: String(x.est), notes: x.n, order: i,
         checks: x.checks.map((c, j) => ({ id: "c" + i + "-" + j, text: c, done: false })),
@@ -300,8 +300,8 @@ export default function ProjectDesk({ language = 'es', theme: globalTheme, orgSc
       
       let userName = localStorage.getItem("coachdata-user-name");
       if (!userName || userName.startsWith("User-") || userName === "Anonymous") {
-        if (authUser?.email?.includes("elsi")) {
-          userName = "Elsi";
+        if (authUser?.email?.includes("coach")) {
+          userName = "Coach";
         } else if (authUser?.email?.includes("diogenes") || authUser?.email?.includes("dev")) {
           userName = "Diogenes";
         } else {
@@ -426,8 +426,8 @@ export default function ProjectDesk({ language = 'es', theme: globalTheme, orgSc
   useEffect(() => {
     const existing = localStorage.getItem("coachdata-user-name");
     if (!existing || existing.startsWith("User-") || existing === "Anonymous") {
-      // Si la ventana no tiene nombre pre-existente, asignamos alternadamente Elsi para la sesión secundaria
-      const defaultName = window.location.search.includes("user=elsi") ? "Elsi" : "Diogenes";
+      // Si la ventana no tiene nombre pre-existente, asignamos alternadamente Coach para la sesión secundaria
+      const defaultName = window.location.search.includes("user=coach") ? "Coach" : "Diogenes";
       localStorage.setItem("coachdata-user-name", defaultName);
     }
   }, []);

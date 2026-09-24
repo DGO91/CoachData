@@ -35,7 +35,7 @@ async function testE2E() {
   const mockProvider = {
     generate: async ({ systemPrompt, userPrompt }) => {
       // Simple dry run check
-      const hasDeaura = /CoachData/i.test(systemPrompt);
+      const hasBrand = /CoachData/i.test(systemPrompt);
       const hasAssistantName = systemPrompt.includes(settings.assistant_name);
       const hasServices = (settings.service_catalog || []).every(s => systemPrompt.includes(s));
       

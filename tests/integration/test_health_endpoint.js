@@ -11,7 +11,7 @@ const path = require('path');
 
 const ROUTER = path.resolve(__dirname, '../../src/backend/infrastructure/web/routes/systemRoutes.js');
 const PUBLICA = 'sb_publishable_Mao5AqJ_fKNGRAv0fpOtCg_arcryaRa';
-const URL_REAL = 'https://driqkbnksvkrzdngktyj.supabase.co';
+const URL_REAL = 'https://your-project.supabase.co';
 
 // Levanta solo el router de sistema, pide /health y escribe {status, body}.
 const HIJO = `

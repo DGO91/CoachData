@@ -27,7 +27,7 @@ export default function WeeklyDigest({ language, userProfile }) {
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customUrl, setCustomUrl] = useState('');
-  const [userName, setUserName] = useState('Elsi');
+  const [userName, setUserName] = useState('Coach');
   const [notionToken, setNotionToken] = useState('');
   const [notionDatabaseId, setNotionDatabaseId] = useState('');
   const [trelloKey, setTrelloKey] = useState('');
@@ -74,7 +74,7 @@ export default function WeeklyDigest({ language, userProfile }) {
           setCustomNewsSources(data.custom_news_sources || []);
           setSelectedTopics(data.selected_topics || ['Business']);
           setCustomKeywords(data.custom_keywords || '');
-          setUserName(data.userName || 'Elsi');
+          setUserName(data.userName || 'Coach');
           setNotionToken(data.notionToken || '');
           setNotionDatabaseId(data.notionDatabaseId || '');
           setTrelloKey(data.trelloKey || '');

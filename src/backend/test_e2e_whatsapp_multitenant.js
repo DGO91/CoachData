@@ -48,9 +48,9 @@ async function testWhatsAppMultiTenantE2E() {
   console.log(msgB);
 
   // Verifications
-  const hasDeauraA = /CoachData/i.test(msgA);
-  const hasDeauraB = /CoachData/i.test(msgB);
-  const coachdataLeak = hasDeauraA || hasDeauraB;
+  const hasBrandA = /CoachData/i.test(msgA);
+  const hasBrandB = /CoachData/i.test(msgB);
+  const coachdataLeak = hasBrandA || hasBrandB;
 
   const namesDifferent = orgA.business_name !== orgB.business_name && msgA.includes('ScaleFlow Coaching') && msgB.includes('FinCore Advisory');
   const assistantsDifferent = orgA.assistant_name !== orgB.assistant_name && msgA.includes('Growth & Operations Assistant') && msgB.includes('Executive Advisory Assistant');

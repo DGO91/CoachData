@@ -22,7 +22,7 @@ Estados: `pendiente` · `parcial` · `hecho` · `no aplica (motivo)`.
 | Área | Ítem | Estado | Evidencia / qué falta |
 |---|---|---|---|
 | Infra | Backup restaurado con éxito | **pendiente** | PITR de Supabase sin verificar desde el 12-ago. Los volcados JSON de `backups/` pesan 50 KB y se detuvieron el 14-ago. Nunca se ha probado una restauración |
-| Entornos | Staging separado de producción | **pendiente** | Hay un solo proyecto Supabase (`driqkbnksvkrzdngktyj`): desarrollo local, CI y producción usan la misma base |
+| Entornos | Staging separado de producción | **pendiente** | Hay un solo proyecto Supabase (`your-project`): desarrollo local, CI y producción usan la misma base |
 | Seguridad | Sin secretos por defecto en el código | **hecho** (desplegado 2026-09-19) | F0.1 y F0.2 (2026-09-19). `INTERNAL_SECRET` sin fallback: `shared/internalSecret.js` impide arrancar si falta o si vale el literal publicado; CI usa uno aleatorio por ejecución. El dispatcher de webhooks salientes no envía sin secreto propio; `tests/integration/test_outbound_webhooks.js` verifica el HMAC y da 3 fallos contra el código anterior |
 | Observabilidad | Captura de errores | **pendiente** | No hay Sentry ni equivalente en backend ni frontend |
 | Observabilidad | Monitoreo externo + alerta a una persona | **pendiente** | El endpoint ya sirve (F0.6): `/api/system/health` responde 503 si la base no contesta, probado por `tests/integration/test_health_endpoint.js`. Falta el monitor externo y la alerta (F3) |

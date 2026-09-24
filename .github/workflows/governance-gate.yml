@@ -23,7 +23,7 @@ jobs:
     # La clave de servicio NO está aquí ni debe estarlo: da acceso saltándose
     # todo el RLS. Los pasos que la necesitan se omiten en CI anunciándolo.
     env:
-      SUPABASE_URL: https://driqkbnksvkrzdngktyj.supabase.co
+      SUPABASE_URL: https://your-project.supabase.co
       SUPABASE_KEY: sb_publishable_Mao5AqJ_fKNGRAv0fpOtCg_arcryaRa
       SUPABASE_ANON_KEY: sb_publishable_Mao5AqJ_fKNGRAv0fpOtCg_arcryaRa
 
