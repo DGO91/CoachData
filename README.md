@@ -41,4 +41,6 @@ tests/             isolation and API tests
 
 Credentials, deployment configuration, the agent subsystems, internal
 handover documents, and two one-off data repair migrations that referenced
-real records. Comments in the SQL are in Spanish, as they were written.
+real records. One unit test went with them: it read the source of an agent
+that is no longer part of this extract. Comments in the SQL are in Spanish,
+as they were written.
