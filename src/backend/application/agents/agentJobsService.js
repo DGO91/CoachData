@@ -125,6 +125,9 @@ async function recuperarPerdidos(queue) {
   const supabase = db();
   const ahora = Date.now();
 
+  // audit-tenant-filter: exento — barrido del trabajador, no de un usuario.
+  // Recupera trabajos colgados de TODAS las organizaciones de esa cola: filtrar
+  // por una dejaría los trabajos de las demás en 'active' para siempre.
   const { data: perdidos, error } = await supabase
     .from('agent_jobs')
     .select('id, retry_count, retry_limit, retry_delay_seconds, expire_seconds, heartbeat_on')
@@ -143,6 +146,8 @@ async function recuperarPerdidos(queue) {
     /* Se le descuenta el intento perdido, como haría un reintento normal: un
        trabajo que mata al proceso cada vez no debe reencolarse sin fin. */
     const puedeReintentar = trabajo.retry_count < trabajo.retry_limit;
+    // audit-tenant-filter: exento — actualiza por el id que devolvió el barrido
+    // de arriba; no hay identificador que venga de fuera.
     await supabase
       .from('agent_jobs')
       .update(puedeReintentar
@@ -189,6 +194,8 @@ async function tomarSiguiente(queue) {
 /** Refresca el latido de un trabajo en curso. */
 async function latir(jobId) {
   if (!jobId) return;
+  // audit-tenant-filter: exento — el latido lo emite el trabajador que ya tomó
+  // el trabajo por RPC con FOR UPDATE SKIP LOCKED; el id no viene del cliente.
   const { error } = await db()
     .from('agent_jobs')
     .update({ heartbeat_on: new Date().toISOString() })
@@ -200,6 +207,8 @@ async function latir(jobId) {
 /** Cierra un trabajo con su resultado. */
 async function completar(jobId, output = null) {
   if (!jobId) throw new TrabajoInvalidoError('Falta el trabajo');
+  // audit-tenant-filter: exento — cierra el trabajo que este trabajador tomó;
+  // el id sale de tomarSiguiente(), no de una petición.
   const { error } = await db()
     .from('agent_jobs')
     .update({
@@ -226,6 +235,8 @@ async function fallar(jobId, motivo) {
   if (!jobId) throw new TrabajoInvalidoError('Falta el trabajo');
   const supabase = db();
 
+  // audit-tenant-filter: exento — lee los reintentos del trabajo que este
+  // trabajador tomó, con el id que le dio tomarSiguiente().
   const { data: trabajo, error: errorLectura } = await supabase
     .from('agent_jobs')
     .select('retry_count, retry_limit, retry_delay_seconds')
@@ -241,6 +252,8 @@ async function fallar(jobId, motivo) {
   const reintentara = intento <= trabajo.retry_limit;
   const espera = esperaDelReintento(intento, trabajo.retry_delay_seconds);
 
+  // audit-tenant-filter: exento — marca el resultado del mismo trabajo que se
+  // acaba de leer arriba con ese id.
   const { error } = await supabase
     .from('agent_jobs')
     .update(reintentara
@@ -268,13 +281,22 @@ async function fallar(jobId, motivo) {
   return { reintentara, intentosRestantes: Math.max(0, trabajo.retry_limit - intento) };
 }
 
-/** Cancela un trabajo que aún no ha terminado. */
-async function cancelar(jobId, motivo = 'Cancelado') {
+/**
+ * Cancela un trabajo que aún no ha terminado, acotado a su organización.
+ *
+ * La organización se pide igual que en estadoDe(): esta función se exporta y
+ * cualquier ruta futura podría llamarla con un uuid que venga del cliente. Sin
+ * el filtro, conocer el uuid bastaría para cancelar el trabajo de otro
+ * inquilino.
+ */
+async function cancelar(organizationId, jobId, motivo = 'Cancelado') {
+  if (!organizationId) throw new TrabajoInvalidoError('Falta la organización');
   if (!jobId) throw new TrabajoInvalidoError('Falta el trabajo');
   const { error } = await db()
     .from('agent_jobs')
     .update({ state: 'cancelled', completed_on: new Date().toISOString(), error: motivo })
     .eq('id', jobId)
+    .eq('organization_id', organizationId)
     .in('state', ESTADOS_VIVOS);
   if (error) {
     console.error('[AgentJobs] No se pudo cancelar:', error.message);

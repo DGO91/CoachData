@@ -38,6 +38,9 @@ function claveDe(agentType, organizationId) {
  * borrarse, para que quede rastro de que se perdieron.
  */
 async function liberarCaducados(supabase, singletonKey) {
+  // audit-tenant-filter: exento — singleton_key es `agentType:organizationId`,
+  // así que la organización ya está dentro del filtro; el barrido por regex no
+  // la ve porque no aparece con ese nombre.
   const { error } = await supabase
     .from('agent_runs')
     .update({
@@ -97,6 +100,8 @@ async function latir(runId) {
   const supabase = getSupabaseClient();
   if (!supabase) return;
 
+  // audit-tenant-filter: exento — el latido lo emite quien sostiene el candado,
+  // con el runId que recibió al tomarlo; no hay id que venga del cliente.
   const { error } = await supabase
     .from('agent_runs')
     .update({ heartbeat_on: new Date().toISOString() })
@@ -115,6 +120,8 @@ async function soltarCandado(runId, estado = 'completed', { output = null, error
   const supabase = getSupabaseClient();
   if (!supabase) return;
 
+  // audit-tenant-filter: exento — suelta el mismo candado que tomó quien llama,
+  // por el runId que se le entregó.
   const { error } = await supabase
     .from('agent_runs')
     .update({
@@ -137,6 +144,8 @@ async function ejecucionActiva(organizationId, agentType) {
   const singletonKey = claveDe(agentType, organizationId);
   await liberarCaducados(supabase, singletonKey);
 
+  // audit-tenant-filter: exento — filtra por singleton_key, que se construye
+  // con el organizationId recibido como parámetro.
   const { data, error } = await supabase
     .from('agent_runs')
     .select('id, started_on, heartbeat_on')
