@@ -1,0 +1,78 @@
+/* Media Suite Container - full height & width */
+.media-suite-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-root);
+}
+
+/* Supabase-style Top Sub-Tabs Header - Flush against top bar, full width */
+.media-suite-tabs-header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  width: 100%;
+}
+
+.media-suite-tabs-list {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.media-suite-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0 1.75rem;
+  height: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-right: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.media-suite-tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.media-suite-tab-btn.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent, var(--color-gold));
+  background: var(--bg-active, rgba(255,255,255,0.03));
+  font-weight: 700;
+}
+
+.media-suite-tab-btn svg {
+  opacity: 0.75;
+}
+
+.media-suite-tab-btn.active svg {
+  opacity: 1;
+  color: var(--accent, var(--color-gold));
+}
+
+/* Active View Workspace - Fully scrollable in 4 directions */
+.media-suite-content-area {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  padding: 1.5rem;
+}
+

@@ -1,0 +1,140 @@
+name: CoachData CI/CD Governance & Security Gate
+
+on:
+  push:
+    branches: [ main, master, release/* ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  governance-gate:
+    name: Security, Observability & UI Governance Check
+    runs-on: ubuntu-latest
+
+    # Las dos claves PÚBLICAS del proyecto. No son secretos: viajan dentro del
+    # JavaScript que se sirve a cualquier navegador, y sin RLS no protegerían
+    # nada — con RLS, publicarlas no abre nada. Van aquí y no en Secrets a
+    # propósito, para que se vea qué usa el gate.
+    #
+    # Sin ellas, getSupabaseClient() devuelve null y authMiddleware responde 500
+    # en lugar de 403 ante un token inválido: el paso 2 del humo de seguridad
+    # fallaba por falta de configuración, no por un fallo real.
+    #
+    # La clave de servicio NO está aquí ni debe estarlo: da acceso saltándose
+    # todo el RLS. Los pasos que la necesitan se omiten en CI anunciándolo.
+    env:
+      SUPABASE_URL: https://driqkbnksvkrzdngktyj.supabase.co
+      SUPABASE_KEY: sb_publishable_Mao5AqJ_fKNGRAv0fpOtCg_arcryaRa
+      SUPABASE_ANON_KEY: sb_publishable_Mao5AqJ_fKNGRAv0fpOtCg_arcryaRa
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      # INTERNAL_SECRET ya no tiene valor por defecto en el código: sin él, el
+      # backend no arranca. CI usa uno aleatorio por ejecución, que no sirve
+      # para nada fuera de este runner.
+      - name: Secreto interno efímero
+        run: echo "INTERNAL_SECRET=$(openssl rand -hex 48)" >> "$GITHUB_ENV"
+
+      - name: 1. Frontend Static Build Verification
+        run: npm run build
+
+      # Las pruebas unitarias no tocan red ni base de datos, así que pueden
+      # correr aquí sin credenciales. Hasta ahora existían en tests/ y no las
+      # ejecutaba nadie: ni había script de npm, ni las llamaba este flujo.
+      - name: 1b. Unit Tests
+        run: npm test
+
+      - name: 2. UI Governance & AI Artifact Check
+        run: node scripts/check-ui-governance.js
+
+      - name: 3. API Security Smoke Tests
+        run: node scripts/test-api-security-smoke.js
+
+      - name: 4. Tenant Isolation RLS Regression Tests
+        run: node scripts/test-tenant-isolation-regression.js
+
+      # Política NO_MOCK_DATA como comprobación ejecutable: ningún camino puede
+      # devolver un plan de pago, una factura o un pago correcto inventados.
+      - name: 5. No Fake Data & Client Contract
+        run: |
+          node scripts/test-no-fake-data.js
+          node scripts/test-supabase-client-contract.js
+
+      # Barrido estático: ninguna consulta a una tabla con organization_id puede
+      # quedarse sin filtrar. No necesita base de datos, así que corta antes de
+      # que el fallo llegue a ejecutarse contra datos reales.
+      - name: 6. Tenant Filter Audit
+        run: node scripts/test-tenant-filter-audit.js
+
+      - name: 7. Routing Regression (webhooks e invitaciones)
+        run: |
+          node scripts/test-webhooks-mounted.js
+          node scripts/test-invitations-routing.js
+          node scripts/test-intelligence-tenant-isolation.js
+          node scripts/test-stripe-webhook.js
+          node scripts/test-cors-whitelist.js
+          node scripts/test-organization-surfaces.js
+          node scripts/test-webhook-inbox.js
+          node scripts/test-encryption-key-rotation.js
+          node scripts/test-dashboard-routes.js
+          node scripts/test-platform-admin.js
+          node scripts/test-user-scoped-client.js
+          node scripts/test-agent-reports-rls-e2e.js
+          node scripts/test-onboarding-pack.js
+
+      # Estas suites estaban escritas en tests/ y el gate no las ejecutaba: ocho
+      # ficheros de cobertura sin usar. Ninguna toca cuentas reales.
+      - name: 8. Suites de integración (tests/)
+        run: |
+          node tests/test_plan_limits_middleware.js
+          node tests/test_backfill_orchestrator.js
+          node tests/test_connectors_backfill.js
+          node tests/test_canonical_timeline_e2e.js
+          node tests/test_mcp_canonical_facade.js
+          node tests/test_outbound_webhooks.js
+          node tests/test_health_endpoint.js
+          node tests/test_whatsapp_cloud_connector.js
+          node tests/test_google_oauth_hardening.js
+
+      - name: 9. Frontend Build Integrity (Tailwind sin CDN)
+        run: node scripts/test-tailwind-build.js
+
+      # Lo que el gate NO ha comprobado, escrito en la propia página del PR.
+      # Un hueco que solo aparece en los registros es un hueco que nadie ve, y
+      # un verde que se malinterpreta es peor que un rojo.
+      - name: 10. Declarar la cobertura que falta
+        if: always()
+        run: |
+          {
+            echo "### Cobertura de este gate"
+            echo ""
+            echo "**22 de 28 comprobaciones se han ejecutado.**"
+            echo ""
+            echo "Seis se han OMITIDO porque necesitan una base de datos real"
+            echo "y, con ella, la clave de servicio — que se salta todo el RLS y"
+            echo "por eso no está en CI:"
+            echo ""
+            echo "| Omitida | Qué deja sin cubrir |"
+            echo "|---|---|"
+            echo "| \`test-tenant-isolation-regression\` | Que un inquilino no vea datos de otro |"
+            echo "| \`test-agent-reports-rls-e2e\` | RLS de los informes de agentes |"
+            echo "| \`test-onboarding-pack\` | Alta de una organización nueva |"
+            echo "| \`test-api-security-smoke\` paso 3 | Caché de 5 s (comportamiento, no seguridad) |"
+            echo "| \`test-platform-admin\` (resumen) | El panel de agencia. Su autorización SÍ se comprueba |"
+            echo "| \`test_canonical_timeline_e2e\` · \`test_mcp_canonical_facade\` | Lectura de tablas canónicas vía RLS |"
+            echo ""
+            echo "Las seis **sí** corren en local con \`.env\`. Para cubrirlas"
+            echo "aquí haría falta un proyecto de Supabase aparte solo para CI,"
+            echo "con su propia clave que no toque datos de clientes."
+          } >> "$GITHUB_STEP_SUMMARY"

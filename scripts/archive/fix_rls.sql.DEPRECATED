@@ -1,0 +1,12 @@
+-- Solución al error: "new row violates row-level security policy for table tenants"
+-- Este script permite que el backend pueda insertar y modificar los clientes y llaves.
+
+-- Políticas para Tenants
+CREATE POLICY "Permitir inserción de tenants" ON tenants FOR INSERT WITH CHECK (true);
+CREATE POLICY "Permitir actualización de tenants" ON tenants FOR UPDATE USING (true);
+CREATE POLICY "Permitir eliminar tenants" ON tenants FOR DELETE USING (true);
+
+-- Políticas para Llaves de Proveedores
+CREATE POLICY "Permitir inserción de llaves" ON client_provider_keys FOR INSERT WITH CHECK (true);
+CREATE POLICY "Permitir actualización de llaves" ON client_provider_keys FOR UPDATE USING (true);
+CREATE POLICY "Permitir eliminar llaves" ON client_provider_keys FOR DELETE USING (true);

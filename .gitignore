@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+!.env.example
+deploy.env
+dist/
+build/
+.next/
+logs/
+*.log
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+src/frontend/public/assets/
+.obsidian/

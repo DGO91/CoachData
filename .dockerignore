@@ -1,0 +1,44 @@
+node_modules/
+*/node_modules/
+*/*/node_modules/
+.git/
+.gitignore
+.env
+*.log
+*.md
+!README.md
+
+# Python virtual environments (installed fresh inside Docker)
+*/venv/
+*/.venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Dev tools
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Vite dev cache
+.vite/
+src/.vite/
+
+# Test files
+*.test.js
+*.spec.js
+test/
+tests/
+
+# Docker files themselves
+Dockerfile
+docker-compose*.yml
+nginx/
+
+# Large data files not needed in image
+data/
+*.sqlite
+*.db

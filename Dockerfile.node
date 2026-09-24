@@ -1,0 +1,17 @@
+FROM node:22-slim
+
+WORKDIR /app
+
+# Install global dependencies first
+COPY package.json package-lock.json ./
+RUN npm ci
+RUN npm install jsonwebtoken
+
+# Copy the entire workspace
+COPY . .
+
+# Install dependencies in any agent subdirectory that has a package.json
+RUN find . -mindepth 2 -name "package.json" -not -path "*/node_modules/*" -exec dirname {} \; | xargs -I {} sh -c 'cd "{}" && npm install'
+
+# The CMD will be overridden in docker-compose.yml
+CMD ["node", "-v"]

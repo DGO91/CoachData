@@ -1,0 +1,391 @@
+// src/shared/errors/AppError.js
+'use strict';
+
+class AppError extends Error {
+    /**
+     * @param {string} message
+     * @param {number} statusCode
+     * @param {string} [errorCode]
+     */
+    constructor(message, statusCode = 500, errorCode = 'INTERNAL_ERROR') {
+        super(message);
+        this.name       = 'AppError';
+        this.statusCode = statusCode;
+        this.errorCode  = errorCode;
+        // Stack trace solo en desarrollo — costoso en producción con millones de eventos
+        if (process.env.NODE_ENV !== 'production') {
+            Error.captureStackTrace(this, this.constructor);
+        }
+    }
+}
+
+module.exports = { AppError };
+```
+
+```javascript
+// src/shared/logger/index.js
+'use strict';
+
+// Buffer de escritura para reducir I/O sincrónico bajo alta carga
+// process.stdout.write es ~3x más rápido que console.log en producción
+const _write = (chunk) => process.stdout.write(chunk);
+const _writeErr = (chunk) => process.stderr.write(chunk);
+
+// Reutilizar objeto base para evitar presión en el GC
+// Cada llamada muta el objeto y lo serializa — sin allocations innecesarias
+const _entry = { level: '', ts: '', message: '', error: undefined, stack: undefined };
+
+// Cache del nivel de log para evitar comparaciones repetidas
+const LOG_LEVEL_PRIORITY = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
+const CURRENT_LEVEL      = LOG_LEVEL_PRIORITY[process.env.LOG_LEVEL?.toUpperCase()] ?? LOG_LEVEL_PRIORITY.INFO;
+
+const logger = {
+    info(message, meta) {
+        if (CURRENT_LEVEL > LOG_LEVEL_PRIORITY.INFO) return;
+        // Construcción inline sin spread para evitar allocations de objeto intermedio
+        const entry = meta
+            ? { level: 'INFO', ts: new Date().toISOString(), message, ...meta }
+            : { level: 'INFO', ts: new Date().toISOString(), message };
+        _write(JSON.stringify(entry) + '\n');
+    },
+
+    warn(message, meta) {
+        if (CURRENT_LEVEL > LOG_LEVEL_PRIORITY.WARN) return;
+        const entry = meta
+            ? { level: 'WARN', ts: new Date().toISOString(), message, ...meta }
+            : { level: 'WARN', ts: new Date().toISOString(), message };
+        _write(JSON.stringify(entry) + '\n');
+    },
+
+    error(message, err, meta) {
+        // ERROR siempre se loguea — sin guard de nivel
+        _entry.level   = 'ERROR';
+        _entry.ts      = new Date().toISOString();
+        _entry.message = message;
+        _entry.error   = err != null ? (err.message ?? String(err)) : '';
+        // Stack solo en no-producción para reducir tamaño del log y presión de serialización
+        _entry.stack = process.env.NODE_ENV !== 'production' ? err?.stack : undefined;
+
+        const payload = meta ? Object.assign({}, _entry, meta) : _entry;
+        _writeErr(JSON.stringify(payload) + '\n');
+
+        // Limpiar referencias mutadas para no retener objetos entre llamadas
+        _entry.error = undefined;
+        _entry.stack = undefined;
+    },
+};
+
+module.exports = { logger };
+```
+
+```javascript
+// src/shared/config/serviceConfig.js
+'use strict';
+
+// Evaluado una sola vez al arrancar — sin recálculo en cada request
+const IS_DOCKER = process.env.DOCKER_ENV === 'true';
+
+const _onboardingHost = IS_DOCKER ? 'coachdata_agent_prospect' : 'localhost';
+const _crmHost        = IS_DOCKER ? 'coachdata_agent_crm'      : 'localhost';
+
+// Object.freeze para marcar como constante y permitir optimizaciones al motor V8
+const SERVICE_CONFIG = Object.freeze({
+    agents: Object.freeze({
+        onboarding: Object.freeze({ baseUrl: `http://${_onboardingHost}:4002` }),
+        crm:        Object.freeze({ baseUrl: `http://${_crmHost}:4003` }),
+    }),
+});
+
+module.exports = { SERVICE_CONFIG };
+```
+
+```javascript
+// src/modules/webhooks/domain/WebhookEvent.js
+'use strict';
+
+class WebhookEvent {
+    /**
+     * Campos públicos con prefijo de convención en lugar de private fields (#).
+     * Los private fields de ES2022 tienen overhead de acceso ~15-20% mayor
+     * que propiedades normales en V8 bajo alta frecuencia de acceso.
+     * En un hot-path de millones de webhooks, esto es medible.
+     *
+     * @param {{ tenantId: string, provider: string, payload: object }} params
+     */
+    constructor({ tenantId, provider, payload }) {
+        if (!tenantId) throw new Error('WebhookEvent requires tenantId');
+        if (!provider) throw new Error('WebhookEvent requires provider');
+        if (!payload)  throw new Error('WebhookEvent requires payload');
+
+        this.tenantId   = tenantId;
+        // toLowerCase() una sola vez al construir — nunca repetido en accesos
+        this.provider   = provider.length === provider.toLowerCase().length
+            ? provider                  // Ya está en lowercase — evitar re-allocation
+            : provider.toLowerCase();
+        // Object.freeze del payload sin spread cuando ya es objeto plano
+        // Si el caller garantiza que payload no se muta, podemos saltar la copia
+        this.payload    = Object.isFrozen(payload) ? payload : Object.freeze(Object.assign(Object.create(null), payload));
+        this.receivedAt = new Date();
+    }
+
+    // toString() cacheado como template fijo — sin concatenaciones repetidas en hot-path
+    toString() {
+        return `WebhookEvent[${this.provider}] tenant=${this.tenantId}`;
+    }
+}
+
+module.exports = { WebhookEvent };
+```
+
+```javascript
+// src/modules/webhooks/domain/Tenant.js
+'use strict';
+
+class Tenant {
+    /**
+     * @param {{ id: string, companyName: string }} params
+     */
+    constructor({ id, companyName }) {
+        if (!id)          throw new Error('Tenant requires id');
+        if (!companyName) throw new Error('Tenant requires companyName');
+
+        this.id          = id;
+        this.companyName = companyName;
+
+        Object.freeze(this);
+    }
+
+    toString() {
+        return `Tenant[${this.id}] "${this.companyName}"`;
+    }
+}
+
+module.exports = { Tenant };
+```
+
+```javascript
+// src/modules/webhooks/domain/errors/TenantNotFoundError.js
+'use strict';
+
+const { AppError } = require('../../../../shared/errors/AppError');
+
+class TenantNotFoundError extends AppError {
+    /** @param {string} tenantId */
+    constructor(tenantId) {
+        super(`Tenant not found: ${tenantId}`, 404, 'TENANT_NOT_FOUND');
+        this.name     = 'TenantNotFoundError';
+        this.tenantId = tenantId;
+    }
+}
+
+module.exports = { TenantNotFoundError };
+```
+
+```javascript
+// src/modules/webhooks/domain/errors/ProviderNotSupportedError.js
+'use strict';
+
+const { AppError } = require('../../../../shared/errors/AppError');
+
+class ProviderNotSupportedError extends AppError {
+    /** @param {string} provider */
+    constructor(provider) {
+        super(`Provider not supported: ${provider}`, 400, 'PROVIDER_NOT_SUPPORTED');
+        this.name     = 'ProviderNotSupportedError';
+        this.provider = provider;
+    }
+}
+
+module.exports = { ProviderNotSupportedError };
+```
+
+```javascript
+// src/modules/webhooks/application/ports/ITenantRepository.js
+'use strict';
+
+/**
+ * Contrato que toda implementación de TenantRepository debe cumplir.
+ * La capa de aplicación solo conoce esta interfaz, nunca Supabase directamente.
+ */
+class ITenantRepository {
+    /**
+     * @param   {string} tenantId
+     * @returns {Promise<import('../../domain/Tenant').Tenant>}
+     * @throws  {import('../../domain/errors/TenantNotFoundError').TenantNotFoundError}
+     */
+    async findById(tenantId) { // eslint-disable-line no-unused-vars
+        throw new Error('ITenantRepository.findById() must be implemented');
+    }
+}
+
+module.exports = { ITenantRepository };
+```
+
+```javascript
+// src/modules/webhooks/application/ports/IKeyRepository.js
+'use strict';
+
+/**
+ * Contrato que toda implementación de KeyRepository debe cumplir.
+ */
+class IKeyRepository {
+    /**
+     * @param   {string} tenantId
+     * @returns {Promise<Record<string, string>>}  { providerName: decryptedKey }
+     */
+    async findDecryptedKeysByTenantId(tenantId) { // eslint-disable-line no-unused-vars
+        throw new Error('IKeyRepository.findDecryptedKeysByTenantId() must be implemented');
+    }
+}
+
+module.exports = { IKeyRepository };
+```
+
+```javascript
+// src/modules/webhooks/application/ports/IWebhookHandler.js
+'use strict';
+
+/**
+ * Contrato que cada handler de provider debe implementar.
+ * Permite añadir providers sin modificar código existente (OCP).
+ */
+class IWebhookHandler {
+    /**
+     * @param   {import('../../domain/WebhookEvent').WebhookEvent} event
+     * @param   {Record<string, string>}                           decryptedKeys
+     * @returns {Promise<void>}
+     */
+    async handle(event, decryptedKeys) { // eslint-disable-line no-unused-vars
+        throw new Error('IWebhookHandler.handle() must be implemented');
+    }
+}
+
+module.exports = { IWebhookHandler };
+```
+
+```javascript
+// src/modules/webhooks/registry/HandlerRegistry.js
+'use strict';
+
+const { ProviderNotSupportedError } = require('../domain/errors/ProviderNotSupportedError');
+
+class HandlerRegistry {
+    constructor() {
+        /** @type {Map<string, import('../application/ports/IWebhookHandler').IWebhookHandler>} */
+        this._handlers = new Map();
+        // Cache de proveedores como array — invalidado solo en register()
+        // Evita Array.from(Map.keys()) en cada llamada a listProviders()
+        this._providerListCache = null;
+    }
+
+    /**
+     * @param   {string}                                                          provider
+     * @param   {import('../application/ports/IWebhookHandler').IWebhookHandler} handler
+     * @returns {this}
+     */
+    register(provider, handler) {
+        if (!provider || typeof provider !== 'string') {
+            throw new Error('HandlerRegistry.register() requires a valid provider name');
+        }
+        if (typeof handler?.handle !== 'function') {
+            throw new Error(`Handler for "${provider}" must implement IWebhookHandler.handle()`);
+        }
+
+        this._handlers.set(provider.toLowerCase(), handler);
+        // Invalidar cache al registrar nuevo handler
+        this._providerListCache = null;
+        return this;
+    }
+
+    /**
+     * Ruta crítica — se llama en cada webhook entrante.
+     * Map.get() es O(1) con hash lookup, sin toLowerCase() redundante
+     * porque WebhookEvent ya normaliza el provider al construirse.
+     *
+     * @param   {string} provider  — debe estar en lowercase (garantizado por WebhookEvent)
+     * @returns {import('../application/ports/IWebhookHandler').IWebhookHandler}
+     * @throws  {ProviderNotSupportedError}
+     */
+    resolve(provider) {
+        const handler = this._handlers.get(provider);
+        if (!handler) throw new ProviderNotSupportedError(provider);
+        return handler;
+    }
+
+    /** @returns {string[]} */
+    listProviders() {
+        if (!this._providerListCache) {
+            this._providerListCache = Array.from(this._handlers.keys());
+        }
+        return this._providerListCache;
+    }
+}
+
+module.exports = { HandlerRegistry };
+```
+
+```javascript
+// src/modules/webhooks/application/WebhookDispatcher.js
+'use strict';
+
+const { WebhookEvent } = require('../domain/WebhookEvent');
+
+class WebhookDispatcher {
+    /**
+     * @param {object}                                                        deps
+     * @param {import('./ports/ITenantRepository').ITenantRepository}         deps.tenantRepository
+     * @param {import('./ports/IKeyRepository').IKeyRepository}               deps.keyRepository
+     * @param {import('../registry/HandlerRegistry').HandlerRegistry}         deps.handlerRegistry
+     * @param {import('../../../shared/logger').logger}                       deps.logger
+     */
+    constructor({ tenantRepository, keyRepository, handlerRegistry, logger }) {
+        this._tenantRepository = tenantRepository;
+        this._keyRepository    = keyRepository;
+        this._handlerRegistry  = handlerRegistry;
+        this._logger           = logger;
+    }
+
+    /**
+     * Orquesta la recepción y el despacho de un webhook entrante.
+     *
+     * Optimizaciones clave:
+     * 1. Fail-fast antes de cualquier I/O (handler + validaciones síncronas)
+     * 2. I/O paralelo: tenant y keys se resuelven concurrentemente con Promise.all
+     *    — elimina latencia en serie (antes: lat_tenant + lat_keys, ahora: max(lat_tenant, lat_keys))
+     *
+     * @param {{ tenantId: string, provider: string, payload: object }} input
+     * @returns {Promise<void>}
+     */
+    async dispatch({ tenantId, provider, payload }) {
+        // 1. Construir entidad de dominio — validación síncrona, sin I/O
+        const event = new WebhookEvent({ tenantId, provider, payload });
+
+        this._logger.info(`[WebhookDispatcher] Received ${event}`);
+
+        // 2. Fail-fast síncrono: provider no soportado → corte inmediato sin I/O
+        //    event.provider ya está normalizado a lowercase por WebhookEvent
+        const handler = this._handlerRegistry.resolve(event.provider);
+
+        // 3. I/O paralelo — tenant y keys no tienen dependencia entre sí
+        //    Promise.all lanza TenantNotFoundError o KEY_FETCH_FAILED si alguno falla
+        const [tenant, decryptedKeys] = await Promise.all([
+            this._tenantRepository.findById(tenantId),
+            this._keyRepository.findDecryptedKeysByTenantId(tenantId),
+        ]);
+
+        // 4. Delegar procesamiento al handler
+        await handler.handle(event, decryptedKeys);
+
+        this._logger.info(`[WebhookDispatcher] Dispatched ${event} for ${tenant}`);
+    }
+}
+
+module.exports = { WebhookDispatcher };
+```
+
+```javascript
+// src/modules/webhooks/infrastructure/repositories/SupabaseTenantRepository.js
+'use strict';
+
+const { ITenantRepository }   = require('../../application/ports/ITenantRepository');
+const { Tenant }              

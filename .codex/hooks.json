@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; case \"$f\" in *.jsx|*.css) out=$(node scripts/governance-check.js \"$f\" --quiet 2>&1) || printf '%s' \"$out\" | jq -Rs '{systemMessage:\"governance-check: violaciones de .agents/rules/\", hookSpecificOutput:{hookEventName:\"PostToolUse\", additionalContext:.}}';; esac; } 2>/dev/null || true",
+            "timeout": 20,
+            "statusMessage": "Verificando reglas de .agents/rules/…"
+          }
+        ]
+      }
+    ]
+  }
+}

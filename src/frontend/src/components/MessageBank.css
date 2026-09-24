@@ -1,0 +1,694 @@
+/* ================================================================
+   CoachData Message Bank Styles — CSS Variables & Utility Overrides
+   ================================================================ */
+
+.mb-root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  color: var(--ink);
+  background: transparent;
+  transition: all 0.25s ease;
+}
+
+.mb-masthead {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 24px 1.5rem;
+  padding: 1.5rem;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--hair-soft);
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+}
+
+.mb-brandline {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-ink, var(--accent));
+  margin-bottom: 0.25rem;
+}
+
+.mb-mast-title {
+  font-family: var(--display);
+  font-weight: var(--display-weight);
+  font-size: 1.75rem;
+  color: var(--heading);
+  line-height: 1.2;
+}
+
+.mb-mast-title em {
+  font-style: normal;
+  color: var(--accent-ink, var(--accent));
+}
+
+.mb-mast-sub {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.mb-navwrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--hair-soft);
+}
+
+.mb-navstrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mb-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1.15rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--hair-soft);
+  background: var(--bg-muted);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 34px;
+}
+
+.mb-pill:hover,
+.mb-pill[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--btn-text, #0D140F);
+  border-color: var(--accent);
+}
+
+.mb-count {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 50px;
+  background: rgba(0, 0, 0, 0.15);
+  color: inherit;
+}
+
+.mb-navfixed {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mb-langseg {
+  display: flex;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--hair-soft);
+  overflow: hidden;
+  background: var(--bg-muted);
+}
+
+.mb-langbtn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mb-langbtn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--btn-text, #FFFFFF);
+}
+
+.mb-corner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.mb-searchwrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.mb-searchwrap svg {
+  position: absolute;
+  left: 0.85rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.mb-searchwrap input {
+  width: 210px;
+  max-width: 210px;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 0.5rem 1rem 0.5rem 2.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--hair-soft, rgba(0,0,0,0.12));
+  background: var(--bg-surface, #FFFFFF);
+  color: var(--ink, #111A15);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.mb-searchwrap input::placeholder {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #71717A);
+  opacity: 0.8;
+}
+
+.mb-searchwrap input:focus {
+  border-color: var(--accent);
+}
+
+.mb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.mb-content {
+  padding: 0 24px 24px;
+}
+
+.mb-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.mb-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mb-resultline {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.mb-statuschip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--hair);
+  background: var(--glass-strong);
+  color: var(--text-primary, var(--ink));
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mb-statuschip:hover,
+.mb-statuschip[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.mb-dot-in-use {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--good, #7CBE92) 30%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.mb-dot-in-use::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--good, #7CBE92);
+}
+
+.mb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.mb-card {
+  border-radius: var(--r-lg);
+  border: 1px solid var(--hair-soft);
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.mb-card:active {
+  cursor: grabbing;
+}
+
+.mb-draghandle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: grab;
+  padding: 0.2rem;
+  border-radius: var(--r-sm);
+  opacity: 0.6;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.mb-card:hover .mb-draghandle {
+  opacity: 1;
+  color: var(--heading);
+}
+
+.mb-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--hair);
+}
+
+.mb-tagrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mb-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid var(--hair-soft);
+  background: var(--bg-muted);
+  color: var(--muted);
+}
+
+.mb-good {
+  color: var(--good);
+  background: var(--good-bg);
+  border-color: color-mix(in srgb, var(--good) 30%, transparent);
+}
+
+.mb-warn {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-color: color-mix(in srgb, var(--warn) 30%, transparent);
+}
+
+.mb-crit {
+  color: var(--crit);
+  background: var(--crit-bg);
+  border-color: color-mix(in srgb, var(--crit) 30%, transparent);
+}
+
+.mb-card-title {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.mb-card-when {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.mb-excerpt {
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mb-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--hair-soft);
+}
+
+.mb-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.mb-copybtn,
+.mb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--r-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid var(--hair);
+  background: var(--bg-muted);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mb-btn-solid,
+.mb-btn.mb-solid {
+  background: var(--accent);
+  color: var(--btn-text, #FFFFFF);
+  border: none;
+}
+
+.mb-copybtn:hover,
+.mb-btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.mb-btn.mb-solid:hover {
+  opacity: 0.9;
+}
+
+.mb-ph {
+  color: var(--accent-ink, var(--accent));
+  font-weight: 700;
+}
+
+.mb-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.mb-modal.mb-on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mb-sheet {
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--hair);
+  background: color-mix(in srgb, var(--ground) 96%, transparent);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: var(--shadow-lift);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mb-sheet-head {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--hair-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mb-sheet-scroll {
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mb-sheet-foot {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--hair-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mb-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: var(--btn-text, #FFFFFF);
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-lift);
+  z-index: 300;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.mb-toast.mb-on {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.mb-input,
+.mb-select,
+.mb-textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--hair);
+  background: var(--bg-muted);
+  color: var(--ink);
+  font-size: 0.875rem;
+  outline: none;
+  font-family: inherit;
+}
+
+.mb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.mb-field label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---- Popover Dropdowns & Icon Buttons ---- */
+.mb-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--hair-soft, rgba(0,0,0,0.12));
+  background: var(--bg-surface, #FFFFFF);
+  color: var(--heading, #111A15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.mb-iconbtn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+.mb-iconbtn.mb-sm {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+.mb-pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 150;
+  min-width: 250px;
+  padding: 1.25rem;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--hair);
+  background: color-mix(in srgb, var(--ground) 96%, transparent);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: var(--shadow-lift);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mb-menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mb-menu-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+.mb-zoomrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.mb-zoomval {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--heading);
+  min-width: 45px;
+  text-align: center;
+}
+
+.mb-menu-action {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  text-align: left;
+}
+
+.mb-menu-action:hover {
+  background: var(--bg-hover);
+  color: var(--heading);
+}
+
+.mb-menu-action.mb-danger {
+  color: var(--crit);
+}
+
+.mb-menu-action.mb-danger:hover {
+  background: var(--crit-bg);
+}
+
+
+/* ── Estado vacío ─────────────────────────────────────────────
+ * La clase .mb-empty se usaba en el JSX pero no estaba definida aquí, así que
+ * el mensaje aparecía como texto suelto sobre el fondo, sin contenedor ni
+ * jerarquía. El borde discontinuo comunica "espacio por llenar" en vez de
+ * "algo ha fallado", que es lo que transmite un hueco vacío sin más.
+ * ─────────────────────────────────────────────────────────── */
+.mb-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  padding: 56px 28px;
+  border: 1px dashed var(--hair);
+  border-radius: var(--r-lg, 16px);
+  background: var(--glass);
+  animation: mb-empty-in 0.28s ease both;
+}
+
+.mb-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-muted);
+  border: 1px solid var(--hair-soft);
+  color: var(--accent-text, var(--accent));
+}
+
+.mb-empty h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: var(--display-weight);
+  font-size: 19px;
+  color: var(--heading);
+  letter-spacing: -0.01em;
+}
+
+.mb-empty p {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+@keyframes mb-empty-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mb-empty { animation: none; }
+}

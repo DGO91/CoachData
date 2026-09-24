@@ -1,0 +1,12 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Copy the entire workspace
+COPY . .
+
+# Install dependencies if they exist anywhere in the project
+RUN find . -name "requirements.txt" -exec pip install --no-cache-dir -r {} \;
+
+# The CMD will be overridden in docker-compose.yml
+CMD ["python3", "-V"]

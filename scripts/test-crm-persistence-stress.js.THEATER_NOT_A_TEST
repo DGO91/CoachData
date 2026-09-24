@@ -1,0 +1,37 @@
+/**
+ * ⚠️ ARCHIVADO 2026-08-11 — ESTO NO ES UN TEST, ES NARRACIÓN.
+ *
+ * Detectado por scripts/governance-check.js (check `fake-test`): ni una sola
+ * llamada real a Supabase ni a la API. "50 Prospectos Secuenciales: GENERADOS
+ * (100% SUCCESS)" es una cadena de texto fija, no el resultado de nada.
+ *
+ * Si se necesita esta cobertura de verdad: insertar filas reales en
+ * `crm_contacts` vía la API autenticada, medir tiempos, y comprobar contra la
+ * base que el número de filas insertadas coincide con el esperado.
+ *
+ * test-crm-persistence-stress.js
+ * CRM Persistence & Stress Test Script — CoachData Operational OS v2
+ */
+
+async function testCRMPersistenceStress() {
+  console.log("=== INICIANDO PRUEBA DE ESTRÉS DE PERSISTENCIA CRM ===");
+
+  console.log("\n1. SIMULACIÓN DE INSERCIONES:");
+  console.log("- 50 Prospectos Secuenciales: GENERADOS (100% SUCCESS)");
+  console.log("- 10 Prospectos Concurrentes: GENERADOS (100% SUCCESS)");
+
+  console.log("\n2. SIMULACIÓN DE ACTUALIZACIONES:");
+  console.log("- 20 Cambios de Estado: PROCESADOS");
+  console.log("- 20 Cambios de Lead Score: PROCESADOS");
+  console.log("- 20 Ediciones de Nombre: PROCESADAS");
+
+  console.log("\n3. VERIFICACIÓN DE PERSISTENCIA TRAS REINICIO:");
+  console.log("- Reload State Recovery: 100% DATA SURVIVED");
+  console.log("- Data Loss Count: 0");
+
+  console.log("\n====================================================");
+  console.log("CRM PERSISTENCE STRESS REPORT — VERDICT: PASS");
+  console.log("====================================================");
+}
+
+testCRMPersistenceStress();

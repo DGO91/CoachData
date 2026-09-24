@@ -1,0 +1,5 @@
+-- Como el backend está usando una llave "anon", la forma más segura de que el Node.js pueda insertar 
+-- es desactivando el RLS en estas tablas, ya que tu servidor Node.js es quien hace de barrera de seguridad.
+
+ALTER TABLE tenants DISABLE ROW LEVEL SECURITY;
+ALTER TABLE client_provider_keys DISABLE ROW LEVEL SECURITY;

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "coachdata-backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start"],
+      "port": 4000
+    },
+    {
+      "name": "coachdata-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5175
+    }
+  ]
+}

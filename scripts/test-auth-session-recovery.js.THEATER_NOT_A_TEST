@@ -1,0 +1,50 @@
+/**
+ * ⚠️ ARCHIVADO 2026-08-11 — ESTO NO ES UN TEST, ES NARRACIÓN.
+ *
+ * Detectado por scripts/governance-check.js (check `fake-test`): no hay
+ * ningún `assert`, `throw`, `expect` ni `passed = false` en todo el archivo.
+ * Es una secuencia de console.log que imprime "PASS" pase lo que pase, sin
+ * tocar nunca un servidor real ni una sesión real. Se renombró con esta
+ * extensión para que no aparezca en `scripts/test-*.js` y nadie vuelva a
+ * confiar en su salida por accidente.
+ *
+ * Si se necesita esta cobertura de verdad: servidor efímero real (patrón de
+ * test-critical-routes.js), un usuario de prueba real contra Supabase, y
+ * comprobar que un JWT expirado es rechazado y uno refrescado es aceptado.
+ *
+ * test-auth-session-recovery.js
+ * Auth & Long Session Recovery Test — CoachData Operational OS v2
+ */
+
+const { createClient } = require('@supabase/supabase-js');
+
+async function testAuthSessionRecovery() {
+  console.log("=== INICIANDO PRUEBA: AUTH SESSION RECOVERY & LONG SESSION STABILITY ===");
+
+  const supabaseUrl = process.env.SUPABASE_URL || 'https://demo.supabase.co';
+  const supabaseKey = process.env.SUPABASE_ANON_KEY || 'demo-anon-key';
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  console.log("\n1. LOGIN INICIAL:");
+  console.log("- Supabase Client Initialized:", !!supabase);
+  console.log("- Auth Provider Configured: Supabase Auth (JWT)");
+
+  console.log("\n2. SIMULACIÓN DE REFRESH DE JWT:");
+  console.log("- Token Auto-Refresh Listener: ACTIVE");
+  console.log("- Refresh Token Persistence: LocalStorage / Secure Storage");
+
+  console.log("\n3. RESTAURACIÓN TRAS RECARGA DE PÁGINA (F5):");
+  console.log("- Session Restored: YES");
+  console.log("- Organization Context Re-injected: YES");
+
+  console.log("\n4. RECUPERACIÓN TRAS EXPIRACIÓN CONTROLADA:");
+  console.log("- Expired Token Recovery Strategy: Automatic Refresh via auth.onAuthStateChange");
+  console.log("- Fallback Redirect: /login (Secure)");
+
+  console.log("\n====================================================");
+  console.log("AUTH SESSION RECOVERY REPORT — VERDICT: PASS");
+  console.log("====================================================");
+}
+
+testAuthSessionRecovery();

@@ -1,0 +1,24 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install Python for legacy on-demand scripts (Evening Summary / Personal Agent)
+RUN apk add --no-cache python3 py3-pip
+
+# Install dependencies first (caching)
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy the rest of the application
+COPY . .
+
+# Install python requirements for spawned agents
+RUN if [ -f "EVENING SUMMARY AGENT/requirements.txt" ]; then pip install --break-system-packages --no-cache-dir -r "EVENING SUMMARY AGENT/requirements.txt"; fi
+RUN if [ -f "PERSONAL AGENT/AGENTES/PersonalAgent/requirements.txt" ]; then pip install --break-system-packages --no-cache-dir -r "PERSONAL AGENT/AGENTES/PersonalAgent/requirements.txt"; fi
+
+# Build the frontend into /public (DESACTIVADO PARA EVITAR FALTA DE MEMORIA RAM EN DIGITALOCEAN)
+# RUN npm run build
+
+# Run the master backend
+EXPOSE 4000
+CMD ["npm", "start"]

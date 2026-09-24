@@ -1,0 +1,102 @@
+# ── HTTP → HTTPS redirect ──────────────────────────────────────
+server {
+    listen 80;
+    server_name coachdata.example www.coachdata.example;
+
+    # Let's Encrypt challenge (certbot)
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # Redirect everything else to HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ── HTTPS main server ──────────────────────────────────────────
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name coachdata.example www.coachdata.example;
+
+    # ── SSL certificates (issued by Certbot) ──
+    ssl_certificate     /etc/nginx/certs/live/coachdata.example/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/live/coachdata.example/privkey.pem;
+
+    # ── Modern SSL settings ──
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # ── Security headers ──
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-Content-Type-Options nosniff;
+    add_header Referrer-Policy strict-origin-when-cross-origin;
+
+    # ── Gzip compression ──
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;
+
+    # ── Client upload limit (for file uploads in agents) ──
+    client_max_body_size 20M;
+
+    # ── Main proxy → Express app ──
+    location / {
+        proxy_pass         http://app:4000;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection 'upgrade';
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 120s;
+    }
+
+    # ── API endpoints (longer timeout for AI calls) ──
+    location /api/ {
+        proxy_pass         http://app:4000;
+        proxy_http_version 1.1;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;   # 5 min for long AI agent calls
+        proxy_send_timeout 300s;
+    }
+
+    # ── Agent service proxies ──
+    location /svc/ {
+        proxy_pass         http://app:4000;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection 'upgrade';
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+    }
+
+    # ── OAuth callback bridge (port 3333 redirect) ──
+    location /oauth2callback {
+        proxy_pass         http://app:4000;
+        proxy_http_version 1.1;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    # ── Static asset caching ──
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
+        proxy_pass         http://app:4000;
+        proxy_set_header   Host $host;
+        expires            7d;
+        add_header         Cache-Control "public, immutable";
+    }
+}

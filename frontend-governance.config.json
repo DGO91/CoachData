@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CoachData Frontend Governance Config",
+  "version": "1.0.0",
+  "rules": {
+    "forbiddenHexColors": true,
+    "forbiddenMockData": true,
+    "forbiddenAIIcons": true,
+    "requireCanonicalButtons": true,
+    "requireDesignTokens": true,
+    "forbidInlineComplexStyles": true,
+    "requireEmptyState": true,
+    "requireAriaLabelsOnIconButton": true
+  },
+  "canonicalTokens": {
+    "fontPrimary": "var(--font)",
+    "fontSerif": "var(--font-serif)",
+    "bgSurface": "var(--bg-surface)",
+    "borderColor": "var(--border)",
+    "accentColor": "var(--accent)",
+    "textPrimary": "var(--text-primary)",
+    "textMuted": "var(--text-muted)"
+  },
+  "breakpoints": {
+    "sm": "576px",
+    "md": "768px",
+    "lg": "992px",
+    "xl": "1200px",
+    "2xl": "1400px"
+  }
+}

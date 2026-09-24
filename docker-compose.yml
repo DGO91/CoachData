@@ -1,0 +1,188 @@
+services:
+  # ── Master App (Node.js backend + React frontend) ──────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.master
+    container_name: coachdata_app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DOCKER_ENV=true
+    volumes:
+      - app_data:/app/data
+      - ./.env:/app/.env:ro
+      - ./src/backend/server.js:/app/src/backend/server.js
+      - certbot_www:/var/www/certbot:ro
+    networks:
+      - coachdata_net
+    ports:
+      - "4000:4000"
+
+  # ── Nginx reverse proxy + SSL ─────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: coachdata_nginx
+    restart: unless-stopped
+    # El contenedor certbot renueva el certificado en disco cada 12 h, pero
+    # nginx lo tiene cargado en memoria y seguiría sirviendo el viejo hasta
+    # caducar. Este bucle lo recarga con la misma cadencia; `reload` no corta
+    # conexiones abiertas.
+    command: ["/bin/sh", "-c", "while :; do sleep 12h; nginx -s reload; done & exec nginx -g 'daemon off;'"]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      - app
+    networks:
+      - coachdata_net
+
+  # ── Certbot ───────────────────────────────────────────────────
+  certbot:
+    image: certbot/certbot:latest
+    container_name: coachdata_certbot
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done"
+    networks:
+      - coachdata_net
+
+  # ── AGENT MICROSERVICES ───────────────────────────────────────
+  agent_prospect:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: coachdata_agent_prospect
+    restart: always
+    working_dir: /app/src/agents/prospect_analyzer/frontend
+    env_file: .env
+    command: ["python3", "app.py"]
+    environment:
+      - PORT=4002
+    networks:
+      - coachdata_net
+
+  agent_email:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: coachdata_agent_email
+    env_file: .env
+    restart: always
+    working_dir: /app/src/agents/email_organizer
+    command: ["node", "server.js"]
+    environment:
+      - PORT=4004
+      - MASTER_URL=http://app:4000
+    networks:
+      - coachdata_net
+
+  agent_mail_responder:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: coachdata_agent_mail_responder
+    env_file: .env
+    restart: always
+    working_dir: /app/src/agents/email_responder
+    command: ["node", "server.js"]
+    environment:
+      - PORT=4008
+      - MASTER_URL=http://app:4000
+    networks:
+      - coachdata_net
+
+  agent_pre_call_agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: coachdata_agent_pre_call_agent
+    env_file: .env
+    restart: always
+    working_dir: /app/src/agents/pre_call_agent
+    command: ["node", "server.js"]
+    environment:
+      - PORT=4011
+      - MASTER_URL=http://app:4000
+    networks:
+      - coachdata_net
+
+  agent_knowledge:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: coachdata_agent_knowledge
+    restart: always
+    working_dir: /app/src/agents/knowledge_agent
+    env_file: .env
+    command: ["node", "server.js"]
+    environment:
+      - PORT=4020
+      - MASTER_URL=http://app:4000
+    networks:
+      - coachdata_net
+
+  agent_auditor:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: coachdata_agent_auditor
+    env_file: .env
+    restart: always
+    working_dir: /app/src/agents/auditor_agent
+    command: ["node", "server.js"]
+    environment:
+      - PORT=4012
+      - MASTER_URL=http://app:4000
+    networks:
+      - coachdata_net
+
+  agent_weekly_digest:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: coachdata_agent_weekly_digest
+    env_file: .env
+    restart: always
+    working_dir: /app/src/agents/weekly_digest
+    command: ["node", "server.js"]
+    environment:
+      - PORT=4014
+      - MASTER_URL=http://app:4000
+    networks:
+      - coachdata_net
+
+  agent_auto_plan:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: coachdata_agent_auto_plan
+    env_file: .env
+    restart: always
+    working_dir: /app/src/agents/auto_plan_creator
+    command: ["python3", "app.py"]
+    networks:
+      - coachdata_net
+
+  # ── Túnel temporal para compartir localmente ──
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --url http://app:4000
+    container_name: coachdata_tunnel
+    networks:
+      - coachdata_net
+
+volumes:
+  app_data:
+  certbot_www:
+
+networks:
+  coachdata_net:
+    driver: bridge

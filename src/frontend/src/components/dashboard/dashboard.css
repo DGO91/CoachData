@@ -1,0 +1,300 @@
+/* src/frontend/src/components/dashboard/dashboard.css */
+/* CoachData Operational Gold Dashboard Styles — Theme System & Responsive Design */
+
+.ogd-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  background: var(--bg-root);
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+.ogd-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.ogd-hero-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ogd-hero-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.ogd-focus-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(37, 99, 235, 0.2));
+  color: #38bdf8;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ogd-focus-btn:hover {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.4), rgba(37, 99, 235, 0.4));
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+/* Health Card */
+.ogd-health-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  gap: 20px;
+}
+
+.ogd-health-score-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 800;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.ogd-status-healthy {
+  border: 4px solid var(--good, #22c55e);
+  color: var(--good, #22c55e);
+  box-shadow: 0 0 15px var(--good-bg, rgba(34, 197, 94, 0.25));
+}
+
+.ogd-status-attention {
+  border: 4px solid var(--warn, #eab308);
+  color: var(--warn, #eab308);
+  box-shadow: 0 0 15px var(--warn-bg, rgba(234, 179, 8, 0.25));
+}
+
+.ogd-status-critical {
+  border: 4px solid var(--crit, #ef4444);
+  color: var(--crit, #ef4444);
+  box-shadow: 0 0 15px var(--crit-bg, rgba(239, 68, 68, 0.25));
+}
+
+/* KPI Grid */
+.ogd-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.ogd-kpi-card {
+  padding: 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.ogd-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong, var(--border));
+}
+
+.ogd-kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.ogd-kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Skeletons & Shimmer Animation */
+.ogd-kpi-skeleton {
+  padding: 18px;
+  background: var(--bg-surface, rgba(15, 23, 42, 0.75));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  height: 100px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ogd-panel-skeleton {
+  padding: 20px;
+  background: var(--bg-surface, rgba(15, 23, 42, 0.75));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ogd-kpi-skeleton::after,
+.ogd-panel-skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: ogd-shimmer 1.5s infinite;
+}
+
+@keyframes ogd-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Main Split Layout */
+.ogd-split-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.ogd-panel {
+  padding: 20px;
+  background: var(--bg-surface, rgba(15, 23, 42, 0.75));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ogd-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ogd-text-main);
+}
+
+.ogd-win-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 1200px) {
+  .ogd-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 960px) {
+  .ogd-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 840px) {
+  .ogd-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ogd-split-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .ogd-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .ogd-health-card {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* Detalle secundario del panel principal.
+   Todo lo que no responde a "cuánto he cobrado", "qué tengo hoy" o "qué requiere
+   mi atención" vive aquí dentro, cerrado por omisión. Antes se apilaba con el
+   mismo peso visual que lo importante y la pantalla no respondía nada. */
+.ogd-detalle {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 4px;
+}
+
+.ogd-detalle > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 6px 2px;
+  user-select: none;
+}
+
+.ogd-detalle > summary::-webkit-details-marker { display: none; }
+
+.ogd-detalle > summary::before {
+  content: '▸';
+  font-size: 11px;
+  transition: transform 160ms ease;
+}
+
+.ogd-detalle[open] > summary::before { transform: rotate(90deg); }
+
+.ogd-detalle > summary:hover { color: var(--text-primary); }
+
+.ogd-detalle > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ogd-detalle > summary::before { transition: none; }
+}
